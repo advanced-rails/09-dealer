@@ -34,6 +34,7 @@ RSpec.describe Car, type: :model do
         c = Car.new(make: 'Ford', model: 'Fusion', year: 2015, vin: '0123456789abcdefg')
         c.save
         expect(c.id).to_not be_nil
+        expect(c.vin).to eql('0123456789ABCDEFG')
         expect(c.created_at).to_not be_nil
         expect(c.updated_at).to_not be_nil
       end
@@ -50,7 +51,13 @@ RSpec.describe Car, type: :model do
         c = Car.new(make: 'Ford', model: 'Fusion', year: 2015, vin: 'abcd')
         c.save
         expect(c.id).to be_nil
-        expect(c.errors[:vin].first).to eql("is the wrong length (should be 17 characters)")
+        expect(c.errors[:vin].second).to eql("is the wrong length (should be 17 characters)")
+      end
+      it 'vin number has incorrect syntax - will not save' do
+        c = Car.new(make: 'Ford', model: 'Fusion', year: 2015, vin: '*12345678@ABC#EFZ')
+        c.save
+        expect(c.id).to be_nil
+        expect(c.errors[:vin].first).to eql("invalid representation")
       end
     end
   end
