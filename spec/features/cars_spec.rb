@@ -10,4 +10,16 @@ RSpec.feature "Cars", type: :feature do
     expect(page).to have_link('New', href: '/cars/new')
     expect(page).to have_link(car.vin, href: "/cars/#{car.id}")
   end
+
+  scenario 'User views their car show page' do
+    car = Car.first
+    visit '/cars'
+    click_link car.vin
+    expect(page).to have_text(car.vin)
+    expect(page).to have_text(car.make)
+    expect(page).to have_text(car.model)
+    expect(page).to have_text(car.year)
+    expect(page).to have_link('Edit', href: "/cars/#{car.id}/edit")
+    expect(page).to have_link('Delete', href: "/cars/#{car.id}")
+  end
 end
