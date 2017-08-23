@@ -21,6 +21,7 @@ RSpec.feature "Cars", type: :feature do
     expect(page).to have_text(car.year)
     expect(page).to have_link('Edit', href: "/cars/#{car.id}/edit")
     expect(page).to have_link('Delete', href: "/cars/#{car.id}")
+    expect(page).to have_current_path("/cars/#{car.id}")
   end
 
   scenario 'User deletes a car' do
@@ -30,6 +31,7 @@ RSpec.feature "Cars", type: :feature do
     click_link 'Delete'
     expect(page).to have_text('Cars')
     expect(page).to_not have_text(car.vin)
+    expect(page).to have_current_path("/cars")
   end
 
   scenario 'User creates a car' do
@@ -43,5 +45,43 @@ RSpec.feature "Cars", type: :feature do
     expect(page).to have_text('AMC')
     expect(page).to have_text('Gremlin')
     expect(page).to have_text('1990')
+  end
+
+  context 'bad form data' do
+    scenario 'User enters invalid year' do
+      visit '/cars/new'
+      fill_in 'car[vin]', with: 'C0000000000000009'
+      fill_in 'car[make]', with: 'AMC'
+      fill_in 'car[model]', with: 'Gremlin'
+      fill_in 'car[year]', with: '1700'
+      click_button 'Create Car'
+      expect(page).to have_text('Year is not between 1900 and 2020')
+    end
+    scenario 'User does not enter make, model' do
+      visit '/cars/new'
+      fill_in 'car[vin]', with: 'C0000000000000009'
+      fill_in 'car[year]', with: '1973'
+      click_button 'Create Car'
+      expect(page).to have_text("Make can't be blank")
+      expect(page).to have_text("Model can't be blank")
+    end
+  end
+
+  scenario 'User updates a car' do
+    car = Car.first
+    visit "/cars/#{car.id}/edit"
+    fill_in 'car[make]', with: 'Ferrari'
+    click_button 'Update Car'
+    expect(page).to have_text('Ferrari')
+    expect(page).to have_text(car.vin)
+    expect(page).to have_current_path("/cars/#{car.id}")
+  end
+
+  scenario 'User does not updates a car - bad vin' do
+    car = Car.first
+    visit "/cars/#{car.id}/edit"
+    fill_in 'car[vin]', with: 'lolz'
+    click_button 'Update Car'
+    expect(page).to have_text('Vin invalid representation')
   end
 end
