@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.feature "Cars", type: :feature do
-  scenario 'User views the /cars page' do
+  scenario 'User views the cars page' do
     car = Car.first
     visit '/cars'
     expect(page).to have_text('Cars')
@@ -11,7 +11,7 @@ RSpec.feature "Cars", type: :feature do
     expect(page).to have_link(car.vin, href: "/cars/#{car.id}")
   end
 
-  scenario 'User views their car show page' do
+  scenario 'User views car show page' do
     car = Car.first
     visit '/cars'
     click_link car.vin
@@ -21,5 +21,27 @@ RSpec.feature "Cars", type: :feature do
     expect(page).to have_text(car.year)
     expect(page).to have_link('Edit', href: "/cars/#{car.id}/edit")
     expect(page).to have_link('Delete', href: "/cars/#{car.id}")
+  end
+
+  scenario 'User deletes a car' do
+    car = Car.first
+    visit '/cars'
+    click_link car.vin
+    click_link 'Delete'
+    expect(page).to have_text('Cars')
+    expect(page).to_not have_text(car.vin)
+  end
+
+  scenario 'User creates a car' do
+    visit '/cars/new'
+    fill_in 'car[vin]', with: 'C0000000000000009'
+    fill_in 'car[make]', with: 'AMC'
+    fill_in 'car[model]', with: 'Gremlin'
+    fill_in 'car[year]', with: '1990'
+    click_button 'Create Car'
+    expect(page).to have_text('C0000000000000009')
+    expect(page).to have_text('AMC')
+    expect(page).to have_text('Gremlin')
+    expect(page).to have_text('1990')
   end
 end
